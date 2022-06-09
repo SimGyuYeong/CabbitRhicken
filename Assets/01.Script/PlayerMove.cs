@@ -54,12 +54,20 @@ public class PlayerMove : MonoBehaviour
         Move();
         CheckPlayerState();
         BodyDirectChange();
+        SetGravity();
     }
 
     void Move()
     {
-        if ((collisionFlags & CollisionFlags.CollidedBelow) != 0) _verticalSpd = 0f;
-        else _verticalSpd -= _gravity * Time.deltaTime;
+
+        if(Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            moveSpd += 5;
+        }
+        else if(Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            moveSpd -= 5;
+        }
 
         //백터 내적
         Transform cameraTransform = Camera.main.transform;
@@ -106,6 +114,21 @@ public class PlayerMove : MonoBehaviour
                     playerState = PlayerState.Idle;
                     animator.SetBool("Walk", false);
                 }
+                 else if (moveSpd > 5f)
+                {
+                    playerState = PlayerState.Run;
+                    animator.SetBool("Walk", false);
+                    animator.SetBool("Run", true);
+                    break;
+                }
+                break;
+            case PlayerState.Run:
+                if(moveSpd <= 5f)
+                {
+                    playerState = PlayerState.Walk;
+                    animator.SetBool("Walk", true);
+                    animator.SetBool("Run", false);
+                }
                 break;
             default:
                 break;
@@ -144,6 +167,18 @@ public class PlayerMove : MonoBehaviour
         if (collision.transform.CompareTag("Monster"))
         {
             pScript.SendMessage("DamagedMonster");
+        }
+    }
+
+    void SetGravity()
+    {
+        if ((collisionFlags & CollisionFlags.CollidedBelow) != 0)
+        {
+            _verticalSpd = 0f;
+        }
+        else
+        {
+            _verticalSpd -= _gravity * Time.deltaTime;
         }
     }
 }
