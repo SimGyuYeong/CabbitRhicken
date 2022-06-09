@@ -209,20 +209,17 @@ public class RabbitCtrl : MonoBehaviour
         }
     }
 
-
     /// <summary>
-    /// 피격 충돌
+    /// 공격 당함ㄴ
     /// </summary>
-    /// <param name="other"></param>
-    private void OnTriggerEnter(Collider other)
+    public void Damaged()
     {
-        if (other.gameObject.CompareTag("PlayerAtk") == true)
+        Debug.Log("공격");
+        hp -= 10;
+        if (hp <= 0)
         {
-            hp -= 10;
-            if (hp <= 0)
-            {
-                rabbitState = RabbitState.Die;
-            }
+            Debug.Log("사망");
+            rabbitState = RabbitState.Die;
         }
     }
 

@@ -15,6 +15,8 @@ public class PlayerMove : MonoBehaviour
     public float bodyRotateSpd = 2f;
     public float VelocityChangSpd = 0.1f;
 
+    private bool isFight = false;
+
     private Vector3 currentVelocitySpd = Vector3.zero;
 
     private Vector3 moveDirect = Vector3.zero;
@@ -30,10 +32,11 @@ public class PlayerMove : MonoBehaviour
     public CharacterController characterController = null;
     public Animator animator = null;
     public Player pScript = null;
+    public PlayerCollider pCollider = null;
 
     public enum PlayerState
     {
-        None, Idle, Walk, Change, Run
+        None, Idle, Walk, Change, Run, Atk
     }
     public PlayerState playerState = PlayerState.None;
 
@@ -42,6 +45,7 @@ public class PlayerMove : MonoBehaviour
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         pScript = GetComponent<Player>();
+        pCollider = transform.Find("Attack").GetComponent<PlayerCollider>();
     }
 
     private void Start()
@@ -55,6 +59,7 @@ public class PlayerMove : MonoBehaviour
         CheckPlayerState();
         BodyDirectChange();
         SetGravity();
+        InputAttack();
     }
 
     void Move()
@@ -133,6 +138,38 @@ public class PlayerMove : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    void InputAttack()
+    {
+        if(Input.GetMouseButtonDown(0))
+        {
+            if(playerState != PlayerState.Atk && isFight == false)
+            {
+                isFight = true;
+                StartCoroutine(Fighting());
+                animator.SetBool("Walk", false);
+                animator.SetBool("Run", false);
+                playerState = PlayerState.Atk;
+                animator.SetBool("Eat", true);
+                pCollider.target?.Damaged();
+            }
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            if(playerState == PlayerState.Atk)
+            {
+                playerState = PlayerState.Idle;
+                animator.SetBool("Eat", false);
+            }
+        }
+    }
+
+    public IEnumerator Fighting()
+    {
+        yield return new WaitForSeconds(1f);
+        isFight = false;
     }
 
     void BodyDirectChange()
