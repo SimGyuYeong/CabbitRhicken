@@ -20,8 +20,8 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void DamagedMonster()
+    public void DamagedMonster(int damage)
     {
-        playerTime -= 5;
+        playerTime -= damage;
     }
 }

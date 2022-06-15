@@ -65,11 +65,11 @@ public class PlayerMove : MonoBehaviour
     void Move()
     {
 
-        if(Input.GetKeyDown(KeyCode.LeftShift))
+        if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             moveSpd += 5;
         }
-        else if(Input.GetKeyUp(KeyCode.LeftShift))
+        else if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             moveSpd -= 5;
         }
@@ -92,12 +92,14 @@ public class PlayerMove : MonoBehaviour
 
         //캐릭터 이동 속도
         float spd = moveSpd;
+        collisionFlags = characterController.Move(moveDirect * Time.deltaTime * spd);
 
-        Vector3 verGravity = new Vector3(0, _verticalSpd, 0);
-
-        Vector3 amount = (moveDirect * spd * Time.deltaTime) + verGravity;
-
-        collisionFlags = characterController.Move(amount);
+        if (Input.GetButtonDown("Jump"))
+        {
+            moveDirect.y += Mathf.Sqrt(5f * -3.0f * -9.81f);
+        }
+        moveDirect.y += _verticalSpd;
+        characterController.Move(moveDirect * Time.deltaTime);
     }
 
     private void CheckPlayerState()
@@ -107,19 +109,19 @@ public class PlayerMove : MonoBehaviour
         switch (playerState)
         {
             case PlayerState.Idle:
-                if(nowSpeed > 0.0f)
+                if (nowSpeed > 0.0f)
                 {
                     playerState = PlayerState.Walk;
                     animator.SetBool("Walk", true);
                 }
                 break;
             case PlayerState.Walk:
-                 if(nowSpeed < 0.01f)
+                if (nowSpeed < 0.01f)
                 {
                     playerState = PlayerState.Idle;
                     animator.SetBool("Walk", false);
                 }
-                 else if (moveSpd > 5f)
+                else if (moveSpd > 5f)
                 {
                     playerState = PlayerState.Run;
                     animator.SetBool("Walk", false);
@@ -128,7 +130,7 @@ public class PlayerMove : MonoBehaviour
                 }
                 break;
             case PlayerState.Run:
-                if(moveSpd <= 5f)
+                if (moveSpd <= 5f)
                 {
                     playerState = PlayerState.Walk;
                     animator.SetBool("Walk", true);
@@ -142,9 +144,9 @@ public class PlayerMove : MonoBehaviour
 
     void InputAttack()
     {
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
-            if(playerState != PlayerState.Atk && isFight == false)
+            if (playerState != PlayerState.Atk && isFight == false)
             {
                 isFight = true;
                 StartCoroutine(Fighting());
@@ -152,14 +154,15 @@ public class PlayerMove : MonoBehaviour
                 animator.SetBool("Run", false);
                 playerState = PlayerState.Atk;
                 animator.SetBool("Eat", true);
-                pCollider.target?.Damaged();
+                
             }
         }
 
         if (Input.GetMouseButtonUp(0))
         {
-            if(playerState == PlayerState.Atk)
+            if (playerState == PlayerState.Atk)
             {
+                isFight = false;
                 playerState = PlayerState.Idle;
                 animator.SetBool("Eat", false);
             }
@@ -168,8 +171,11 @@ public class PlayerMove : MonoBehaviour
 
     public IEnumerator Fighting()
     {
-        yield return new WaitForSeconds(1f);
-        isFight = false;
+        while(isFight)
+        {
+            pCollider.target?.Damaged();
+            yield return new WaitForSeconds(0.5f);
+        }
     }
 
     void BodyDirectChange()

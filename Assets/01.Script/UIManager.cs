@@ -13,9 +13,9 @@ public class UIManager : MonoBehaviour
         labelStyle.fontSize = 30;
         labelStyle.normal.textColor = Color.black;
 
-        float _getVelocitySpd = _pMove.GetVelocitySpd();
+        //float _getVelocitySpd = _pMove.GetVelocitySpd();
 
-        GUILayout.Label("현재속도 : " + _getVelocitySpd.ToString(), labelStyle);
+        //GUILayout.Label("현재속도 : " + _getVelocitySpd.ToString(), labelStyle);
 
         GUILayout.Label("현재시간 : " + _player.playerTime.ToString() + "초", labelStyle);
     }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class RabbitCtrl : MonoBehaviour
 {
+    [SerializeField] private Player _player;
 
     [Header("기본 속성")]
     
@@ -21,6 +22,8 @@ public class RabbitCtrl : MonoBehaviour
     [Header("전투속성")]
     public int hp = 100;
     public float AtkRange = 1.5f;
+    public float attackDelay = 3f;
+    private bool _isAttacking = false;
 
     void Start()
     {
@@ -70,12 +73,14 @@ public class RabbitCtrl : MonoBehaviour
                                     _trm.position.y + 1000f,
                                     _trm.position.z + Random.Range(-10f, 10f)
                 );
+
             Ray ray = new Ray(posTarget, Vector3.down);
             RaycastHit infoRayCast = new RaycastHit();
             if (Physics.Raycast(ray, out infoRayCast, Mathf.Infinity) == true)
             {
                 posTarget.y = infoRayCast.point.y;
             }
+
             rabbitState = RabbitState.Move;
         }
         else
@@ -152,7 +157,7 @@ public class RabbitCtrl : MonoBehaviour
         Vector3 direction = distance.normalized;
 
         //방향은 x,z 사용 y는 땅을 파고 들어갈거라 안함
-        direction = new Vector3(direction.x, 0f, direction.z);
+        direction = new Vector3(direction.x, 0f, -direction.z);
 
         //이동량 방향 구하기
         Vector3 amount = direction * spdMove * Time.deltaTime;
@@ -201,12 +206,25 @@ public class RabbitCtrl : MonoBehaviour
         //해골과 캐릭터간의 위치 거리 
         float distance = Vector3.Distance(targetTransform.position, _trm.position); //무겁다
 
+        if(_isAttacking==false)
+        {
+            _player.SendMessage("DamagedMonster", 1);
+            _isAttacking = true;
+            StartCoroutine(AttackDelay());
+        }
+
         //공격 거리보다 둘 간의 거리가 멀어 졌다면 
         if (distance > AtkRange + 0.5f)
         {
             //타겟과의 거리가 멀어졌다면 타겟으로 이동 
             rabbitState = RabbitState.GoTarget;
         }
+    }
+
+    private IEnumerator AttackDelay()
+    {
+        yield return new WaitForSeconds(attackDelay);
+        _isAttacking = false;
     }
 
     /// <summary>
