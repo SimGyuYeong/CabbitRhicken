@@ -45,7 +45,7 @@ public class PlayerMove : MonoBehaviour
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         pScript = GetComponent<Player>();
-        pCollider = transform.Find("Attack").GetComponent<PlayerCollider>();
+        pCollider = transform.Find("AttackCollider").GetComponent<PlayerCollider>();
     }
 
     private void Start()
@@ -173,7 +173,10 @@ public class PlayerMove : MonoBehaviour
     {
         while(isFight)
         {
-            pCollider.target?.Damaged();
+            if(pCollider.target != null)
+            {
+                pCollider.target.Damaged();
+            }
             yield return new WaitForSeconds(0.5f);
         }
     }

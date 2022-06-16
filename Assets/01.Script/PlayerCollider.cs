@@ -8,7 +8,9 @@ public class PlayerCollider : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        target = collision.transform.GetComponent<RabbitCtrl>();
+        Debug.Log(collision.transform.tag);
+        if(collision.transform.tag == "Monster")
+         target = collision.transform.GetComponent<RabbitCtrl>();
     }
 
     private void OnCollisionExit(Collision collision)

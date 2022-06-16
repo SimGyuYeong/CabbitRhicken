@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RabbitCtrl : MonoBehaviour
+public class RabbitCtrl : Monster
 {
-    [SerializeField] private Player _player;
-
     [Header("기본 속성")]
     
     public float spdMove = 1f;
@@ -13,22 +11,16 @@ public class RabbitCtrl : MonoBehaviour
     public Transform targetTransform = null;
     public Vector3 posTarget = Vector3.zero;
 
-    private Animation _animation = null;
+    private Animator _animator = null;
     private Transform _trm = null;
 
     public enum RabbitState { Idle, Move, Wait, GoTarget, Atk, Damage, Die }
     public RabbitState rabbitState = RabbitState.Idle;
 
-    [Header("전투속성")]
-    public int hp = 100;
-    public float AtkRange = 1.5f;
-    public float attackDelay = 3f;
-    private bool _isAttacking = false;
-
     void Start()
     {
         //애니메이, 트랜스폼 컴포넌트 캐싱 : 쓸때마다 찾아 만들지 않게
-        _animation = GetComponent<Animation>();
+        _animator = GetComponent<Animator>();
         _trm = GetComponent<Transform>();
 
     }
@@ -94,6 +86,7 @@ public class RabbitCtrl : MonoBehaviour
     /// </summary>
     void SetMove()
     {
+        _animator.SetBool("Walk", true);
         //출발점 도착점 두 벡터의 차이 
         Vector3 distance = Vector3.zero;
         //어느 방향을 바라보고 가고 있느냐 
@@ -107,11 +100,12 @@ public class RabbitCtrl : MonoBehaviour
                 //만약 랜덤 위치 값이 제로가 아니면
                 if (posTarget != Vector3.zero)
                 {
+
                     //목표 위치에서 해골 있는 위치 차를 구하고
                     distance = posTarget - _trm.position;
 
                     //만약에 움직이는 동안 해골이 목표로 한 지점 보다 작으 
-                    if (distance.magnitude < AtkRange)
+                    if (distance.magnitude < attackRange)
                     {
                         //대기 동작 함수를 호출
                         StartCoroutine(SetWait());
@@ -134,7 +128,7 @@ public class RabbitCtrl : MonoBehaviour
                     //목표 위치에서 해골 있는 위치 차를 구하고
                     distance = targetCharactor.transform.position - _trm.position;
                     //만약에 움직이는 동안 해골이 목표로 한 지점 보다 작으 
-                    if (distance.magnitude < AtkRange)
+                    if (distance.magnitude < attackRange)
                     {
                         //공격상태로 변경합니.
                         rabbitState = RabbitState.Atk;
@@ -157,13 +151,13 @@ public class RabbitCtrl : MonoBehaviour
         Vector3 direction = distance.normalized;
 
         //방향은 x,z 사용 y는 땅을 파고 들어갈거라 안함
-        direction = new Vector3(direction.x, 0f, -direction.z);
+        direction = new Vector3(direction.x, 0f, direction.z);
 
         //이동량 방향 구하기
         Vector3 amount = direction * spdMove * Time.deltaTime;
 
         //캐릭터 컨트롤이 아닌 트랜스폼으로 월드 좌표 이용하여 이동
-        _trm.Translate(amount, Space.World);
+        _trm.Translate(amount);
         //캐릭터 방향 정하기
         _trm.LookAt(posLookAt);
     }
@@ -206,25 +200,15 @@ public class RabbitCtrl : MonoBehaviour
         //해골과 캐릭터간의 위치 거리 
         float distance = Vector3.Distance(targetTransform.position, _trm.position); //무겁다
 
-        if(_isAttacking==false)
-        {
-            _player.SendMessage("DamagedMonster", 1);
-            _isAttacking = true;
-            StartCoroutine(AttackDelay());
-        }
+        Attack();
 
         //공격 거리보다 둘 간의 거리가 멀어 졌다면 
-        if (distance > AtkRange + 0.5f)
+        if (distance > attackRange + 0.5f)
         {
             //타겟과의 거리가 멀어졌다면 타겟으로 이동 
             rabbitState = RabbitState.GoTarget;
+            _animator.SetBool("Walk", true);
         }
-    }
-
-    private IEnumerator AttackDelay()
-    {
-        yield return new WaitForSeconds(attackDelay);
-        _isAttacking = false;
     }
 
     /// <summary>
@@ -236,9 +220,9 @@ public class RabbitCtrl : MonoBehaviour
         hp -= 10;
         if (hp <= 0)
         {
-            Debug.Log("사망");
+            _animator.SetTrigger("Dead");
             rabbitState = RabbitState.Die;
+            Dead();
         }
     }
-
 }

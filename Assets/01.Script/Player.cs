@@ -4,7 +4,16 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public int playerTime = 100;
+    private int _playerTime = 100;
+    public int PlayerTime
+    {
+        get => _playerTime;
+        set
+        {
+            _playerTime = value;
+            UIManager.Instance.UpdateTimeUI();
+        }
+    }
 
     private void Start()
     {
@@ -16,12 +25,12 @@ public class Player : MonoBehaviour
         while(true)
         {
             yield return new WaitForSeconds(1f);
-            playerTime -= 1;
+            PlayerTime -= 1;
         }
     }
 
     public void DamagedMonster(int damage)
     {
-        playerTime -= damage;
+        PlayerTime -= damage;
     }
 }
