@@ -12,23 +12,21 @@ public class UIManager : MonoBehaviour
     public SpawnMonster spawnMonster;
 
     [SerializeField] private Player _player;
-    [SerializeField] private PlayerMove _pMove;
+    [SerializeField] public PlayerMove pMove;
 
     [SerializeField] private TextMeshProUGUI _timeText;
     [SerializeField] private GameObject _titleObj;
     private Image _titleEffectImage;
+
+    [SerializeField] private ShopButton _shopButton;
+    [SerializeField] private GameObject playingShopUI;
+    public bool isPlayingShopOpen = false;
 
     private void Awake()
     {
         Instance = this;
         _titleEffectImage = _titleObj.transform.Find("EffectSprite").GetComponent<Image>();
         spawnMonster = GetComponent<SpawnMonster>();
-    }
-
-    private void Start()
-    {
-        TitleShow("Stage 1");
-        StartCoroutine(transform.GetComponent<SpawnMonster>().MonsterSpawnCoroutine());
     }
 
     public void TitleShow(string text)
@@ -50,15 +48,61 @@ public class UIManager : MonoBehaviour
     public void UpdateTimeUI()
     {
         _timeText.text = string.Format($"{_player.PlayerTime}s");
+        playingShopUI.transform.Find("Time/Text").GetComponent<TextMeshProUGUI>().text = string.Format($"{_player.PlayerTime}s");
     }
 
     private void OnGUI()
     {
         var labelStyle = new GUIStyle();
-        labelStyle.fontSize = 30;
-        labelStyle.normal.textColor = Color.white; 
+        labelStyle.fontSize = 100;
+        labelStyle.normal.textColor = Color.black; 
         
-        GUI.Label(new Rect(500, 10, 100, 50), "남은 몬스터 : " + spawnMonster.monsters.Count + "마리", labelStyle);
+        GUI.Label(new Rect(1000, 10, 100, 50), "남은 몬스터 : " + spawnMonster.monsters.Count + "마리", labelStyle);
     }
 
+    public void ShowPlayingShop()
+    {
+        isPlayingShopOpen = !isPlayingShopOpen;
+        if(isPlayingShopOpen == true)
+        {
+            Sequence seq = DOTween.Sequence();
+            seq.Append(playingShopUI.transform.DOScale(Vector3.one, 1f));
+            seq.AppendCallback(() =>
+            {
+                Time.timeScale = 0f;
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+            });
+        }
+        else
+        {
+            Time.timeScale = 1f;
+            playingShopUI.transform.DOScale(Vector3.zero, 1f);
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            if(_shopButton.deathCnt > 0)
+            {
+                while (_shopButton.deathCnt != 0)
+                {
+                    if(spawnMonster.monsters.Count > 0)
+                    {
+                        int cnt = Random.Range(0, spawnMonster.monsters.Count);
+                        spawnMonster.monsters[cnt].GetComponent<Monster>().Dead();
+                    }
+                    _shopButton.deathCnt--;
+                }
+            }
+
+            if(pMove.moveSpd > 5)
+            {
+                StartCoroutine(Boost());
+            }
+        }
+    }
+
+    public IEnumerator Boost()
+    {
+        yield return new WaitForSeconds(3f);
+        pMove.moveSpd -= 5;
+    }
 }

@@ -6,7 +6,7 @@ public class FollowCamera : MonoBehaviour
 {
     [Header("카메라 기본속성")]
     [SerializeField] private Transform _targetObj = null;
-    private float _followSpd = 10f;
+    public float followSpd = 10f;
     private float _sensitivity = 100f;
     private float _clampAngle = 70f;
 
@@ -48,7 +48,7 @@ public class FollowCamera : MonoBehaviour
         Quaternion _rot = Quaternion.Euler(_rotX, _rotY, 0);
         transform.rotation = _rot;
 
-        transform.position = Vector3.MoveTowards(transform.position, _targetObj.position, _followSpd * Time.deltaTime);
+        transform.position = Vector3.MoveTowards(transform.position, _targetObj.position, followSpd * Time.deltaTime);
 
         _finalDir = transform.TransformPoint(_dirNormalized * _maxDistance);
 

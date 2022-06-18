@@ -19,6 +19,21 @@ public class SpawnMonster : MonoBehaviour
     //생성할 몬스터 랜덤 최소, 최대값
     public Vector3 minPos, maxPos;
 
+    public void Init(int count)
+    {
+        if(monsters.Count != 0)
+        {
+            foreach(var monster in monsters)
+            {
+                Destroy(monster);
+            }
+        }
+
+        maxSpawnCount = count;
+        spawnCount = 0;
+        monsters.Clear();
+    }
+
     public IEnumerator MonsterSpawnCoroutine()
     {
         while(true)

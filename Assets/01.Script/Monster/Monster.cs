@@ -52,5 +52,10 @@ public class Monster : MonoBehaviour
         _player.PlayerTime += addTime;
         UIManager.Instance.spawnMonster.monsters.Remove(gameObject);
         Destroy(gameObject);
+
+        if(UIManager.Instance.spawnMonster.monsters.Count == 0)
+        {
+            UIManager.Instance.TitleShow("Stage Clear");
+        }
     }
 }

@@ -24,8 +24,10 @@ public class Player : MonoBehaviour
     {
         while(true)
         {
+            
             yield return new WaitForSeconds(1f);
-            PlayerTime -= 1;
+            if (UIManager.Instance.isPlayingShopOpen == false)
+                PlayerTime -= 1;
         }
     }
 

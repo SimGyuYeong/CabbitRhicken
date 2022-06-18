@@ -36,11 +36,16 @@ public class PlayerMove : MonoBehaviour
     public Player pScript = null;
     public PlayerCollider pCollider = null;
 
+    private bool _isRun = false;
+
     public enum PlayerState
     {
         None, Idle, Walk, Change, Run, Atk
     }
     public PlayerState playerState = PlayerState.None;
+
+    [Header("플레이어 캐싱")]
+    public FollowCamera followCam;
 
     private void Awake()
     {
@@ -73,11 +78,15 @@ public class PlayerMove : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
-            moveSpd += 5;
+            moveSpd += 3;
+            followCam.followSpd += 3;
+            _isRun = true;
         }
         else if (Input.GetKeyUp(KeyCode.LeftShift))
         {
-            moveSpd -= 5;
+            moveSpd -= 3;
+            followCam.followSpd -= 3;
+            _isRun = false;
         }
 
         //백터 내적
@@ -128,7 +137,7 @@ public class PlayerMove : MonoBehaviour
                     playerState = PlayerState.Idle;
                     animator.SetBool("Walk", false);
                 }
-                else if (moveSpd > 5f)
+                else if (_isRun ==  true)
                 {
                     playerState = PlayerState.Run;
                     animator.SetBool("Walk", false);
@@ -137,7 +146,7 @@ public class PlayerMove : MonoBehaviour
                 }
                 break;
             case PlayerState.Run:
-                if (moveSpd <= 5f)
+                if (_isRun == false)
                 {
                     playerState = PlayerState.Walk;
                     animator.SetBool("Walk", true);
