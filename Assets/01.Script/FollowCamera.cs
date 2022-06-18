@@ -5,54 +5,66 @@ using UnityEngine;
 public class FollowCamera : MonoBehaviour
 {
     [Header("카메라 기본속성")]
-    private Transform _camTransform = null; //카메라 캐싱준비
-    public GameObject objTarget = null;
-    private Transform _objTargetTransform = null;
+    [SerializeField] private Transform _targetObj = null;
+    private float _followSpd = 10f;
+    private float _sensitivity = 100f;
+    private float _clampAngle = 70f;
 
-    //떨어진 거리
-    public float distance = 6.0f;
+    private float _rotX;
+    private float _rotY;
 
-    //추가된 높이
-    public float height = 1.75f;
+    [SerializeField] private Transform _realCam;
+    private Vector3 _dirNormalized;
+    private Vector3 _finalDir;
+    private float _minDistance =1;
+    private float _maxDistance = 2;
+    private float _finalDistance;
 
-    public float heightDamp = 2.0f;
-    public float rotateDamp = 3.0f;
+    private float _smoothness = 10f;
 
     private void Awake()
     {
-        _camTransform = GetComponent<Transform>();
-        if(objTarget != null)
-        {
-            _objTargetTransform = objTarget.transform;
-        }
+        _rotX = transform.localRotation.eulerAngles.x;
+        _rotY = transform.localRotation.eulerAngles.y;
+
+        _dirNormalized = _realCam.localPosition.normalized;
+        _finalDistance = _realCam.localPosition.magnitude;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    private void Start()
+    {
+        _realCam.LookAt(_targetObj);
     }
 
     private void LateUpdate()
     {
-        if (objTarget == null) return;
+        _rotX += -(Input.GetAxis("Mouse Y")) * _sensitivity * Time.deltaTime;
+        _rotY += Input.GetAxis("Mouse X") * _sensitivity * Time.deltaTime;
 
-        if (_objTargetTransform == null) _objTargetTransform = objTarget.transform;
+        _rotX = Mathf.Clamp(_rotX, -_clampAngle, _clampAngle);
+        Quaternion _rot = Quaternion.Euler(_rotX, _rotY, 0);
+        transform.rotation = _rot;
 
-        float _objTargetRotationAngle = _objTargetTransform.eulerAngles.y;
-        float _objHeight = _objTargetTransform.position.y + height;
+        transform.position = Vector3.MoveTowards(transform.position, _targetObj.position, _followSpd * Time.deltaTime);
 
-        float _nowRotationAngle = _camTransform.eulerAngles.y;
-        float _nowHeight = _camTransform.position.y;
+        _finalDir = transform.TransformPoint(_dirNormalized * _maxDistance);
 
-        _nowRotationAngle = Mathf.LerpAngle(_nowRotationAngle, _objTargetRotationAngle, rotateDamp * Time.deltaTime);
+        RaycastHit hit;
 
-        _nowHeight = Mathf.Lerp(_nowHeight, _objHeight, heightDamp * Time.deltaTime);
+        if(Physics.Linecast(transform.position, _finalDir, out hit))
+        {
+            _finalDistance = Mathf.Clamp(hit.distance, _minDistance, _maxDistance);
+        }
+        else
+        {
+            _finalDistance = _maxDistance;
+        }
 
-        //유니티가 euler을 못 읽으니 quaternion으로 변환
-        Quaternion _nowRotation = Quaternion.Euler(0f, _nowRotationAngle, 0f);
-
-        _camTransform.position = _objTargetTransform.position;
-        //_nowRotation * Vector3.forward: 방향백터
-        // 방향백터랑 거리랑 곱한 후 빼니까 거리만큼 뒤로감
-        _camTransform.position -= _nowRotation * Vector3.forward * distance;
-
-        _camTransform.position = new Vector3(_camTransform.position.x, _nowHeight, _camTransform.position.z);
-
-        _camTransform.LookAt(_objTargetTransform);
+        _realCam.localPosition = Vector3.Lerp(_realCam.localPosition, _dirNormalized * _finalDistance, Time.deltaTime * _smoothness);
+        _realCam.LookAt(_targetObj);
     }
+
 }

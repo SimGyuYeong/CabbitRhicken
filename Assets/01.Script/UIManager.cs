@@ -42,9 +42,9 @@ public class UIManager : MonoBehaviour
 
         Sequence seq1 = DOTween.Sequence();
         seq1.AppendInterval(1f);
-        seq1.Append(_titleObj.transform.DOMoveY(200, .5f, true));
+        seq1.Append(_titleObj.transform.DOLocalMove(new Vector3(0, 0, 0), .5f, true));
         seq1.Append(seq.Play());
-        seq1.Append(_titleObj.transform.DOLocalMove(new Vector3(0, 164, 0), .5f, true));
+        seq1.Append(_titleObj.transform.DOLocalMove(new Vector3(0, 440, 0), .5f, true));
     }
 
     public void UpdateTimeUI()
