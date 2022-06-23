@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private SpawnMonster _spawnMonster;
     public Player player;
+    public int maxMonsterCnt;
     private int _stageCount = 0;
 
     [SerializeField] private Vector3 _spawnPos;

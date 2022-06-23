@@ -44,9 +44,6 @@ public class PlayerMove : MonoBehaviour
     }
     public PlayerState playerState = PlayerState.None;
 
-    [Header("플레이어 캐싱")]
-    public FollowCamera followCam;
-
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
@@ -79,13 +76,11 @@ public class PlayerMove : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             moveSpd += 3;
-            followCam.followSpd += 3;
             _isRun = true;
         }
         else if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             moveSpd -= 3;
-            followCam.followSpd -= 3;
             _isRun = false;
         }
 

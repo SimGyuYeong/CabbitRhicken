@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Holoville.HOTween;
 
 public class RabbitCtrl : Monster
 {
@@ -11,8 +12,14 @@ public class RabbitCtrl : Monster
     public Transform targetTransform = null;
     public Vector3 posTarget = Vector3.zero;
 
+    public GameObject ckTargetObj = null;
+
     private Animator _animator = null;
     private Transform _trm = null;
+    private BoxCollider _collider = null;
+
+    private Tweener effectTweener = null;
+    private SkinnedMeshRenderer skinnedMeshRenderer = null;
 
     public enum RabbitState { Idle, Move, Wait, GoTarget, Atk, Damage, Die }
     public RabbitState rabbitState = RabbitState.Idle;
@@ -21,8 +28,11 @@ public class RabbitCtrl : Monster
     {
         //애니메이, 트랜스폼 컴포넌트 캐싱 : 쓸때마다 찾아 만들지 않게
         _animator = GetComponent<Animator>();
+        _collider = GetComponent<BoxCollider>();
         _trm = GetComponent<Transform>();
 
+        ckTargetObj = FindObjectOfType<Player>().gameObject;
+        skinnedMeshRenderer = transform.Find("RabbitSkin").GetComponent<SkinnedMeshRenderer>();
     }
 
     /// <summary>
@@ -61,24 +71,35 @@ public class RabbitCtrl : Monster
     {
         if (targetCharactor == null)
         {
-            posTarget = new Vector3(_trm.position.x + Random.Range(-10f, 10f),
-                                    _trm.position.y + 1000f,
-                                    _trm.position.z + Random.Range(-10f, 10f)
-                );
-
-            Ray ray = new Ray(posTarget, Vector3.down);
-            RaycastHit infoRayCast = new RaycastHit();
-            if (Physics.Raycast(ray, out infoRayCast, Mathf.Infinity) == true)
-            {
-                posTarget.y = infoRayCast.point.y;
-            }
-
+            SetPosTarget();
+            StartCoroutine(RefreshPosTarget());
             rabbitState = RabbitState.Move;
         }
         else
         {
             rabbitState = RabbitState.GoTarget;
         }
+    }
+
+    private void SetPosTarget()
+    {
+        posTarget = new Vector3(_trm.position.x + Random.Range(-10f, 10f),
+                                    _trm.position.y + 1000f,
+                                    _trm.position.z + Random.Range(-10f, 10f)
+                );
+
+        Ray ray = new Ray(posTarget, Vector3.down);
+        RaycastHit infoRayCast = new RaycastHit();
+        if (Physics.Raycast(ray, out infoRayCast, Mathf.Infinity) == true)
+        {
+            posTarget.y = infoRayCast.point.y;
+        }
+    }
+
+    private IEnumerator RefreshPosTarget()
+    {
+        yield return new WaitForSeconds(10f);
+        SetIdle();
     }
 
     /// <summary>
@@ -101,17 +122,14 @@ public class RabbitCtrl : Monster
                 if (posTarget != Vector3.zero)
                 {
 
-                    //목표 위치에서 해골 있는 위치 차를 구하고
                     distance = posTarget - _trm.position;
-
-                    //만약에 움직이는 동안 해골이 목표로 한 지점 보다 작으 
-                    if (distance.magnitude < attackRange)
+                    if (Vector3.Distance(_trm.position, ckTargetObj.transform.position) <= attackRange)
                     {
-                        //대기 동작 함수를 호출
+                        OnCkTarget(ckTargetObj);
                         StartCoroutine(SetWait());
-                        //여기서 끝냄
-                        return;
                     }
+
+                    if (distance.magnitude < 1) StartCoroutine(SetWait());
 
                     //어느 방향을 바라 볼 것인. 랜덤 지역
                     posLookAt = new Vector3(posTarget.x,
@@ -120,6 +138,7 @@ public class RabbitCtrl : Monster
                                             posTarget.z);
                 }
                 break;
+
             //캐릭터를 향해서 가는 돌아다니는  경우
             case RabbitState.GoTarget:
                 //목표 캐릭터가 있을 땟
@@ -206,7 +225,9 @@ public class RabbitCtrl : Monster
         if (distance > attackRange + 0.5f)
         {
             //타겟과의 거리가 멀어졌다면 타겟으로 이동 
-            rabbitState = RabbitState.GoTarget;
+            rabbitState = RabbitState.Move;
+            targetCharactor = null;
+            targetTransform = null;
             _animator.SetBool("Walk", true);
         }
     }
@@ -216,12 +237,48 @@ public class RabbitCtrl : Monster
     /// </summary>
     public void Damaged()
     {
-        Debug.Log("공격");
+        if (rabbitState == RabbitState.Die) return;
+        effectDamageTween();
         hp -= 10;
         if (hp <= 0)
         {
             _animator.SetTrigger("Dead");
             rabbitState = RabbitState.Die;
         }
+    }
+
+    /// <summary>
+    /// 피격시 몬스터 몸에서 번쩍번쩍 효과를 준다
+    /// </summary>
+    void effectDamageTween()
+    {
+        //트윈을 돌리다 또 트윈 함수가 진행되면 로직이 엉망이 될 수 있어서 
+        //트윈 중복 체크로 미리 차단을 해준다
+        if (effectTweener != null && effectTweener.isComplete == false)
+        {
+            return;
+        }
+
+        //번쩍이는 이펙트 색상을 지정해준다
+        Color colorTo = Color.red;
+
+        //트윈의 타겟은 스킨매쉬랜더러, 시간은 0.2초, 파라메터로는 색상 , 반복. 콜백함수
+        effectTweener = HOTween.To(skinnedMeshRenderer, 0.2f, new TweenParms()
+                                //색상을 교체
+                                .Prop("material.color", colorTo)
+                                // 반복은 1번만 요요를 안쓰면 빨강색 1회 흰색 1회 해야 한다. 
+                                .Loops(1, LoopType.Yoyo)
+                                //피격 이펙트 종료시 이벤트 함수 호출
+                                .OnStepComplete(OnDamageTweenFinished));
+        
+    }
+
+    /// <summary>
+    /// 피격이펙트 종료시 이벤트 함수 호출
+    /// </summary>
+    void OnDamageTweenFinished()
+    {
+        //트윈이 끝나면 하얀색으로 확실히 색상을 돌려준다
+        skinnedMeshRenderer.material.color = Color.white;
     }
 }

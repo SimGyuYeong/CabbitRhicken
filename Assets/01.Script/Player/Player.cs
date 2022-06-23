@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
         set
         {
             _playerTime = value;
-            UIManager.Instance.UpdateTimeUI();
+            UIManager.Instance.UpdateStatusUI();
         }
     }
 

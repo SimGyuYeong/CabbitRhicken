@@ -15,6 +15,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] public PlayerMove pMove;
 
     [SerializeField] private TextMeshProUGUI _timeText;
+    [SerializeField] private TextMeshProUGUI _monsterCntText;
     [SerializeField] private GameObject _titleObj;
     private Image _titleEffectImage;
 
@@ -45,19 +46,22 @@ public class UIManager : MonoBehaviour
         seq1.Append(_titleObj.transform.DOLocalMove(new Vector3(0, 440, 0), .5f, true));
     }
 
-    public void UpdateTimeUI()
+    public void UpdateStatusUI()
     {
         _timeText.text = string.Format($"{_player.PlayerTime}s");
         playingShopUI.transform.Find("Time/Text").GetComponent<TextMeshProUGUI>().text = string.Format($"{_player.PlayerTime}s");
+
+
+        _monsterCntText.text = string.Format($"{spawnMonster.monsters.Count} / {spawnMonster.maxSpawnCount}");
     }
 
     private void OnGUI()
     {
         var labelStyle = new GUIStyle();
-        labelStyle.fontSize = 100;
+        labelStyle.fontSize = 50;
         labelStyle.normal.textColor = Color.black; 
         
-        GUI.Label(new Rect(1000, 10, 100, 50), "남은 몬스터 : " + spawnMonster.monsters.Count + "마리", labelStyle);
+        GUI.Label(new Rect(1000, 10, 200, 50), "[ E ] 키를 눌러 상점열기", labelStyle);
     }
 
     public void ShowPlayingShop()

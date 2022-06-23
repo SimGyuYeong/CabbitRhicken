@@ -389,7 +389,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bc07751d5f657c47b0ef7f5177b7641, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
   damage: 1
   hp: 20
   attackRange: 1
@@ -400,6 +399,7 @@ MonoBehaviour:
   targetCharactor: {fileID: 0}
   targetTransform: {fileID: 0}
   posTarget: {x: 0, y: 0, z: 0}
+  ckTargetObj: {fileID: 0}
   rabbitState: 0
 --- !u!65 &6677504055092769190
 BoxCollider:
@@ -412,8 +412,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 0.6994669, z: 1.0668948}
-  m_Center: {x: 0, y: 0.3858753, z: 0.033447385}
+  m_Size: {x: 1, y: 0.55409044, z: 0.7358322}
+  m_Center: {x: 0, y: 0.37075236, z: 0.04570532}
 --- !u!54 &4757661533732741599
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -813,7 +813,7 @@ GameObject:
   - component: {fileID: 3677863302125401270}
   - component: {fileID: 3666733161095770302}
   m_Layer: 0
-  m_Name: Rabbit
+  m_Name: RabbitSkin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
