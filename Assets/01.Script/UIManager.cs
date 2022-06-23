@@ -11,10 +11,13 @@ public class UIManager : MonoBehaviour
 
     public SpawnMonster spawnMonster;
 
+    [SerializeField] private Transform _canvas;
+
     [SerializeField] private Player _player;
     [SerializeField] public PlayerMove pMove;
 
-    [SerializeField] private TextMeshProUGUI _timeText;
+    private Text _explainText;
+    private TextMeshProUGUI _timeText;
     [SerializeField] private TextMeshProUGUI _monsterCntText;
     [SerializeField] private GameObject _titleObj;
     private Image _titleEffectImage;
@@ -28,6 +31,9 @@ public class UIManager : MonoBehaviour
         Instance = this;
         _titleEffectImage = _titleObj.transform.Find("EffectSprite").GetComponent<Image>();
         spawnMonster = GetComponent<SpawnMonster>();
+
+        _explainText = _canvas.Find("Shop/ExplainText").GetComponent<Text>();
+        _timeText = _canvas.Find("Shop/Time/Text").GetComponent<TextMeshProUGUI>();
     }
 
     public void TitleShow(string text)
@@ -70,7 +76,7 @@ public class UIManager : MonoBehaviour
         if(isPlayingShopOpen == true)
         {
             Sequence seq = DOTween.Sequence();
-            seq.Append(playingShopUI.transform.DOScale(Vector3.one, 1f));
+            seq.Append(playingShopUI.transform.DOScale(Vector3.one, .5f));
             seq.AppendCallback(() =>
             {
                 Time.timeScale = 0f;
@@ -81,9 +87,13 @@ public class UIManager : MonoBehaviour
         else
         {
             Time.timeScale = 1f;
-            playingShopUI.transform.DOScale(Vector3.zero, 1f);
+            playingShopUI.transform.DOScale(Vector3.zero, .5f);
+
+            _explainText.text = "";
+
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
+
             if(_shopButton.deathCnt > 0)
             {
                 while (_shopButton.deathCnt != 0)
@@ -108,5 +118,10 @@ public class UIManager : MonoBehaviour
     {
         yield return new WaitForSeconds(3f);
         pMove.moveSpd -= 5;
+    }
+
+    public void ShopExplainMessage(string message)
+    {
+        _explainText.text = message;
     }
 }
