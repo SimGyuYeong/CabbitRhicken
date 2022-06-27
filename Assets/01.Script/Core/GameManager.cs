@@ -39,6 +39,9 @@ public class GameManager : MonoBehaviour
         NextStage();
     }
 
+    /// <summary>
+    /// 플레이어가 죽었을 때 발동되는 함수
+    /// </summary>
     public void GameOver()
     {
         gameType = GameType.Ready;
@@ -52,6 +55,9 @@ public class GameManager : MonoBehaviour
         NextStage();
     }
 
+    /// <summary>
+    /// 다음 스테이지로 넘어갈때 
+    /// </summary>
     public void NextStage()
     {
         UIManager.Instance.SkillStatusUpdate?.Invoke();
@@ -66,6 +72,9 @@ public class GameManager : MonoBehaviour
         _stageCount++;
     }
 
+    /// <summary>
+    /// 해당 스테이지를 깼을 때
+    /// </summary>
     public void StageClear()
     {
         gameType = GameType.Ready;
@@ -73,6 +82,9 @@ public class GameManager : MonoBehaviour
         GivenGold();
     }
 
+    /// <summary>
+    /// 시간 비례해서 코인 지급
+    /// </summary>
     public void GivenGold()
     {
         player.Gold += player.PlayerTime * 5;

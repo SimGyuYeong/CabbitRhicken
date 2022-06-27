@@ -26,6 +26,10 @@ public class UIManager : MonoBehaviour
     private Image _slowly; //시간 지연 스킬 이미지
     private Image _powerUP; //각성 스킬 이미지
     private Image _timeStop; //시간 정지 스킬 이미지
+    public Action SkillStatusUpdate;
+    private Image _skillExplainText; //스킬 사용 설명 텍스트
+
+    private GameObject _gameStopUI; //게임 종료 UI
 
     [SerializeField] private GameObject _titleObj;
     private Image _titleEffectImage;
@@ -37,9 +41,7 @@ public class UIManager : MonoBehaviour
 
     public bool isShopOpen = false;
 
-    public Action SkillStatusUpdate;
-
-    private Image _skillExplainText;
+    
 
     private void Awake()
     {
@@ -57,8 +59,9 @@ public class UIManager : MonoBehaviour
         _slowly = _canvas.Find("SkillInv/SlowlyTime/Icon").GetComponent<Image>();
         _powerUP = _canvas.Find("SkillInv/PowerUp/Icon").GetComponent<Image>();
         _timeStop = _canvas.Find("SkillInv/TimeStop/Icon").GetComponent<Image>();
-
         _skillExplainText = _canvas.Find("SkillInv/Explain").GetComponent<Image>();
+
+        _gameStopUI = _canvas.Find("GameStop").gameObject;
     }
 
     private void Start()
@@ -74,6 +77,24 @@ public class UIManager : MonoBehaviour
         {
             if (GameManager.Instance.gameType == GameManager.GameType.Ing) ShowShop(playingShopUI.transform);
             else ShowShop(_coinShopUI);
+        }
+        else if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            if(_gameStopUI.activeSelf == false)
+            {
+                _gameStopUI.SetActive(true);
+                Time.timeScale = 0f;
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+            }
+            else
+            {
+                _gameStopUI.SetActive(false);
+                Time.timeScale = 1f;
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+            
         }
     }
 
@@ -189,6 +210,10 @@ public class UIManager : MonoBehaviour
         pMove.moveSpd -= 5;
     }
 
+    /// <summary>
+    /// 상점 구매 관련 안내 메세지 설정하는 함수
+    /// </summary>
+    /// <param name="message"></param>
     public void ShopExplainMessage(string message)
     {
         if (GameManager.Instance.gameType == GameManager.GameType.Ing)
@@ -197,6 +222,10 @@ public class UIManager : MonoBehaviour
             _coinExplainText.text = message;
     }
 
+    /// <summary>
+    /// 스킬 사용 관련 안내 메세지 띄워주는 함수
+    /// </summary>
+    /// <param name="message"></param>
     public void SkillExplainMessage(string message)
     {
         _skillExplainText.transform.GetComponentInChildren<Text>().text = message;
@@ -279,5 +308,17 @@ public class UIManager : MonoBehaviour
             //하얀색으로 변경
             _timeStop.DOColor(Color.white, .5f);
         }
+    }
+    
+    /// <summary>
+    /// 게임 종료 함수
+    /// </summary>
+    public void GameExit()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+                Application.Quit();
+#endif
     }
 }
