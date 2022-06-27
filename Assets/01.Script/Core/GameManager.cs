@@ -22,6 +22,13 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private Vector3 _spawnPos;
 
+    public enum GameType
+    {
+        Ready,
+        Ing
+    }
+    public GameType gameType = GameType.Ready;
+
     private void Awake()
     {
         Instance = this;
@@ -32,16 +39,17 @@ public class GameManager : MonoBehaviour
         NextStage();
     }
 
-    private void Update()
+    public void GameOver()
     {
-        if(Input.GetKeyDown(KeyCode.E))
-        {
-            UIManager.Instance.ShowPlayingShop();
-        }
+        gameType = GameType.Ready;
+        _stageCount = 0;
+        player.Gold = 0;
+        NextStage();
     }
 
     public void NextStage()
     {
+        gameType = GameType.Ing;
         _spawnMonster.Init(stages[_stageCount].monsterCount);
 
         player.transform.localPosition = _spawnPos;
@@ -50,5 +58,18 @@ public class GameManager : MonoBehaviour
         player.PlayerTime = stages[_stageCount].second;
         StartCoroutine(_spawnMonster.MonsterSpawnCoroutine());
         _stageCount++;
+    }
+
+    public void StageClear()
+    {
+        gameType = GameType.Ready;
+        UIManager.Instance.TitleShow("Stage Clear!");
+        GivenGold();
+        Invoke(nameof(NextStage), 20f);
+    }
+
+    public void GivenGold()
+    {
+        player.Gold += player.PlayerTime * 10;
     }
 }

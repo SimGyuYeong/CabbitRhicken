@@ -105,7 +105,7 @@ public class PlayerMove : MonoBehaviour
 
         if (Input.GetButtonDown("Jump"))
         {
-            _jumpVelocity.y += Mathf.Sqrt(5f * -3.0f * -9.81f);
+            _jumpVelocity.y += Mathf.Sqrt(3f * -3.0f * -9.81f);
         }
         _jumpVelocity.y += _verticalSpd;
         characterController.Move(_jumpVelocity * Time.deltaTime);

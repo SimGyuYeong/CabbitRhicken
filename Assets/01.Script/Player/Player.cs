@@ -12,6 +12,22 @@ public class Player : MonoBehaviour
         {
             _playerTime = value;
             UIManager.Instance.UpdateStatusUI();
+            if (_playerTime <= 0)
+            {
+                GameManager.Instance.GameOver();
+            }
+        }
+    }
+
+    private int _gold = 0;
+    public int Gold
+    {
+        get => _gold;
+        set
+        {
+            _gold = value;
+            UIManager.Instance.UpdateStatusUI();
+            if (_gold < 0) _gold = 0;
         }
     }
 
@@ -26,7 +42,7 @@ public class Player : MonoBehaviour
         {
             
             yield return new WaitForSeconds(1f);
-            if (UIManager.Instance.isPlayingShopOpen == false)
+            if (UIManager.Instance.isShopOpen == false && GameManager.Instance.gameType == GameManager.GameType.Ing)
                 PlayerTime -= 1;
         }
     }

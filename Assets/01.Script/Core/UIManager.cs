@@ -18,13 +18,17 @@ public class UIManager : MonoBehaviour
 
     private Text _explainText;
     private TextMeshProUGUI _timeText;
+    private TextMeshProUGUI _shopTimeText;
     [SerializeField] private TextMeshProUGUI _monsterCntText;
     [SerializeField] private GameObject _titleObj;
     private Image _titleEffectImage;
 
     [SerializeField] private ShopButton _shopButton;
     [SerializeField] private GameObject playingShopUI;
-    public bool isPlayingShopOpen = false;
+
+    private Transform _coinShopUI;
+
+    public bool isShopOpen = false;
 
     private void Awake()
     {
@@ -32,8 +36,20 @@ public class UIManager : MonoBehaviour
         _titleEffectImage = _titleObj.transform.Find("EffectSprite").GetComponent<Image>();
         spawnMonster = GetComponent<SpawnMonster>();
 
-        _explainText = _canvas.Find("Shop/ExplainText").GetComponent<Text>();
-        _timeText = _canvas.Find("Shop/Time/Text").GetComponent<TextMeshProUGUI>();
+        _explainText = _canvas.Find("TimeShop/ExplainText").GetComponent<Text>();
+        _timeText = _canvas.Find("Time/Text").GetComponent<TextMeshProUGUI>();
+        _shopTimeText = _canvas.Find("TimeShop/Time/Text").GetComponent<TextMeshProUGUI>();
+
+        _coinShopUI = _canvas.Find("CoinShop");
+    }
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.E))
+        {
+            if (GameManager.Instance.gameType == GameManager.GameType.Ing) ShowShop(playingShopUI.transform);
+            else ShowShop(_coinShopUI);
+        }
     }
 
     public void TitleShow(string text)
@@ -55,8 +71,7 @@ public class UIManager : MonoBehaviour
     public void UpdateStatusUI()
     {
         _timeText.text = string.Format($"{_player.PlayerTime}s");
-        playingShopUI.transform.Find("Time/Text").GetComponent<TextMeshProUGUI>().text = string.Format($"{_player.PlayerTime}s");
-
+        _shopTimeText.text = string.Format($"{_player.PlayerTime}s");
 
         _monsterCntText.text = string.Format($"{spawnMonster.monsters.Count} / {spawnMonster.maxSpawnCount}");
     }
@@ -70,13 +85,13 @@ public class UIManager : MonoBehaviour
         GUI.Label(new Rect(1000, 10, 200, 50), "[ E ] 키를 눌러 상점열기", labelStyle);
     }
 
-    public void ShowPlayingShop()
+    public void ShowShop(Transform shopTrm)
     {
-        isPlayingShopOpen = !isPlayingShopOpen;
-        if(isPlayingShopOpen == true)
+        isShopOpen = !isShopOpen;
+        if (isShopOpen == true)
         {
             Sequence seq = DOTween.Sequence();
-            seq.Append(playingShopUI.transform.DOScale(Vector3.one, .5f));
+            seq.Append(shopTrm.DOScale(Vector3.one, .5f));
             seq.AppendCallback(() =>
             {
                 Time.timeScale = 0f;
@@ -87,31 +102,42 @@ public class UIManager : MonoBehaviour
         else
         {
             Time.timeScale = 1f;
-            playingShopUI.transform.DOScale(Vector3.zero, .5f);
+            shopTrm.DOScale(Vector3.zero, .5f);
 
             _explainText.text = "";
 
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
 
-            if(_shopButton.deathCnt > 0)
-            {
-                while (_shopButton.deathCnt != 0)
-                {
-                    if(spawnMonster.monsters.Count > 0)
-                    {
-                        int cnt = Random.Range(0, spawnMonster.monsters.Count);
-                        spawnMonster.monsters[cnt].GetComponent<Monster>().Dead();
-                    }
-                    _shopButton.deathCnt--;
-                }
-            }
+            if (GameManager.Instance.gameType == GameManager.GameType.Ing) CloseTimeShop();
+            else CloseCoinShop();
+        }
+    }
 
-            if(pMove.moveSpd > 5)
+    public void CloseTimeShop()
+    {
+        if (_shopButton.deathCnt > 0)
+        {
+            while (_shopButton.deathCnt != 0)
             {
-                StartCoroutine(Boost());
+                if (spawnMonster.monsters.Count > 0)
+                {
+                    int cnt = Random.Range(0, spawnMonster.monsters.Count);
+                    spawnMonster.monsters[cnt].GetComponent<Monster>().Dead();
+                }
+                _shopButton.deathCnt--;
             }
         }
+
+        if (pMove.moveSpd > 5)
+        {
+            StartCoroutine(Boost());
+        }
+    }
+
+    public void CloseCoinShop()
+    {
+
     }
 
     public IEnumerator Boost()

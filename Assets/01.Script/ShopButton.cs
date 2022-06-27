@@ -13,9 +13,9 @@ public class ShopButton : MonoBehaviour
             case 1:
                 if(deathCnt <= UIManager.Instance.spawnMonster.monsters.Count)
                 {
-                    if (GameManager.Instance.player.PlayerTime >= 100)
+                    if (GameManager.Instance.player.PlayerTime >= 60)
                     {
-                        GameManager.Instance.player.PlayerTime -= 30;
+                        GameManager.Instance.player.PlayerTime -= 60;
                         deathCnt++;
                         UIManager.Instance.ShopExplainMessage($"원격사살 아이템을 구매하여 [ 적 {deathCnt}마리 ] 를 사살합니다.");
                     }

@@ -16,7 +16,7 @@ public class SpawnMonster : MonoBehaviour
     //몬스터 생성 카운트
     public int spawnCount = 0;
 
-    //생성할 몬스터 랜덤 최소, 최대값
+    //몬스터 생성 랜덤좌표 최소, 최대값
     public Vector3 minPos, maxPos;
 
     public void Init(int count)

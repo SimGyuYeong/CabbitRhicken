@@ -55,7 +55,7 @@ public class Monster : MonoBehaviour
 
         if(UIManager.Instance.spawnMonster.monsters.Count == 0)
         {
-            UIManager.Instance.TitleShow("Stage Clear");
+            GameManager.Instance.StageClear();
         }
     }
 }
