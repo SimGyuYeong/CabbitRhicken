@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public PlayerSkill skill;
+
     private int _playerTime = 100;
     public int PlayerTime
     {
@@ -31,16 +33,25 @@ public class Player : MonoBehaviour
         }
     }
 
+    public int slowlyTimeCnt;
+    public int powerUpCnt;
+    public int timeStopCnt;
+
     private void Start()
     {
-        StartCoroutine(ReductionTime());
+        StartCoroutine(ReductionTime()); 
     }
 
     IEnumerator ReductionTime()
     {
         while(true)
         {
-            
+            if(skill.timeStopIng)
+            {
+                yield return new WaitForSeconds(1f);
+                continue;
+            }
+            if (skill.slowlyTimeIng == true) yield return new WaitForSeconds(1f);
             yield return new WaitForSeconds(1f);
             if (UIManager.Instance.isShopOpen == false && GameManager.Instance.gameType == GameManager.GameType.Ing)
                 PlayerTime -= 1;

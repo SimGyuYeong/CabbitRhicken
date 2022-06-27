@@ -44,11 +44,17 @@ public class GameManager : MonoBehaviour
         gameType = GameType.Ready;
         _stageCount = 0;
         player.Gold = 0;
+
+        player.slowlyTimeCnt = 0;
+        player.powerUpCnt = 0;
+        player.timeStopCnt = 0;
+
         NextStage();
     }
 
     public void NextStage()
     {
+        UIManager.Instance.SkillStatusUpdate?.Invoke();
         gameType = GameType.Ing;
         _spawnMonster.Init(stages[_stageCount].monsterCount);
 
@@ -65,11 +71,10 @@ public class GameManager : MonoBehaviour
         gameType = GameType.Ready;
         UIManager.Instance.TitleShow("Stage Clear!");
         GivenGold();
-        Invoke(nameof(NextStage), 20f);
     }
 
     public void GivenGold()
     {
-        player.Gold += player.PlayerTime * 10;
+        player.Gold += player.PlayerTime * 5;
     }
 }
