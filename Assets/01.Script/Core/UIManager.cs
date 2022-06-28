@@ -92,7 +92,7 @@ public class UIManager : MonoBehaviour
         {
             if (GameManager.Instance.gameType == GameManager.GameType.Ing)
             {
-                if (playingShopUI.activeSelf == true)
+                if (playingShopUI.transform.localScale == Vector3.one)
                 {
                     ShowShop(playingShopUI.transform);
                     return;
@@ -100,13 +100,13 @@ public class UIManager : MonoBehaviour
             }
             else if (GameManager.Instance.gameType == GameManager.GameType.Ready)
             {
-                if (_coinShopUI.gameObject.activeSelf == true)
+                if (_coinShopUI.localScale == Vector3.one)
                 {
                     ShowShop(_coinShopUI.transform);
                     return;
                 }
             }
-
+            
             ShowOptionPanel();
         }
     }
