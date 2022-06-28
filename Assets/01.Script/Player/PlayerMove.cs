@@ -23,6 +23,8 @@ public class PlayerMove : MonoBehaviour
 
     private Vector3 _jumpVelocity;
 
+    private Vector3 _amount = Vector3.zero;
+
     //중력값
     private float _gravity = 0.8f;
 
@@ -87,18 +89,17 @@ public class PlayerMove : MonoBehaviour
         //백터 내적
         Transform cameraTransform = Camera.main.transform;
         //메인카메라가 바라보는 방향이 월드상에서 어떤 방향인가
-        Vector3 foward = cameraTransform.TransformDirection(Vector3.forward);
-        foward.y = 0f;
-
-        Vector3 right = new Vector3(foward.z, 0f, -foward.x);
+        Vector3 forward = cameraTransform.TransformDirection(Vector3.forward);
+        forward.y = 0f;
 
         float vertical = Input.GetAxisRaw("Vertical");
         float horizontal = Input.GetAxisRaw("Horizontal");
 
-        Vector3 targetDirect = horizontal * right + vertical * foward;
+        Vector3 right = new Vector3(forward.z, 0f, -forward.x);
+        _amount = (forward * vertical + right * horizontal) * Time.deltaTime;
+        _amount *= moveSpd;
 
-        moveDirect = Vector3.RotateTowards(moveDirect, targetDirect, directRotateSpd * Mathf.Deg2Rad * Time.deltaTime, 1000f);
-        moveDirect = moveDirect.normalized;
+        collisionFlags = characterController.Move(_amount);
 
         //캐릭터 이동 속도
         float spd = moveSpd;
@@ -115,19 +116,18 @@ public class PlayerMove : MonoBehaviour
 
     private void CheckPlayerState()
     {
-        float nowSpeed = GetVelocitySpd();
 
         switch (playerState)
         {
             case PlayerState.Idle:
-                if (nowSpeed > 0.0f)
+                if (moveSpd > 0.0f)
                 {
                     playerState = PlayerState.Walk;
                     animator.SetBool("Walk", true);
                 }
                 break;
             case PlayerState.Walk:
-                if (nowSpeed < 0.01f)
+                if (moveSpd < 0.01f)
                 {
                     playerState = PlayerState.Idle;
                     animator.SetBool("Walk", false);
@@ -194,13 +194,14 @@ public class PlayerMove : MonoBehaviour
 
     void BodyDirectChange()
     {
-        if (GetVelocitySpd() > 0f)
-        {
-            Vector3 newForward = characterController.velocity;
-            newForward.y = 0;
+        Vector3 newForward = characterController.velocity;
+        newForward.y = 0;
 
-            transform.forward = Vector3.Lerp(transform.forward, newForward, bodyRotateSpd * Time.deltaTime);
-        }
+        transform.forward = Vector3.Lerp(transform.forward, newForward, bodyRotateSpd * Time.deltaTime);
+
+        _amount.y = 0f;
+        if (_amount != Vector3.zero)
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(_amount), bodyRotateSpd * Time.deltaTime);
     }
 
     public float GetVelocitySpd()
