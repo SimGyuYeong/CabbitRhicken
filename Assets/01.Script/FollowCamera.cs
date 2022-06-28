@@ -31,8 +31,6 @@ public class FollowCamera : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
 
         //카메라 위치 캐싱
         cameraTransform = GetComponent<Transform>();

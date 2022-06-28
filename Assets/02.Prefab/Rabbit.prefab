@@ -401,6 +401,7 @@ MonoBehaviour:
   posTarget: {x: 0, y: 0, z: 0}
   ckTargetObj: {fileID: 0}
   rabbitState: 0
+  attackParticle: {fileID: 100000, guid: bc98890f6028f444eaa7789bde5e2eeb, type: 3}
 --- !u!65 &6677504055092769190
 BoxCollider:
   m_ObjectHideFlags: 0

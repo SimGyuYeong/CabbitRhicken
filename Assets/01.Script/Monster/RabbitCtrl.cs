@@ -24,6 +24,11 @@ public class RabbitCtrl : Monster
     public enum RabbitState { Idle, Move, Wait, GoTarget, Atk, Damage, Die }
     public RabbitState rabbitState = RabbitState.Idle;
 
+    [Header("파티클")]
+
+    public GameObject attackParticle;
+
+
     void Start()
     {
         //애니메이, 트랜스폼 컴포넌트 캐싱 : 쓸때마다 찾아 만들지 않게
@@ -238,47 +243,13 @@ public class RabbitCtrl : Monster
     public void Damaged()
     {
         if (rabbitState == RabbitState.Die) return;
-        effectDamageTween();
+        GameObject particle = Instantiate(attackParticle, transform);
+        particle.transform.localPosition = Vector3.up;
         hp -= 10;
         if (hp <= 0)
         {
             _animator.SetTrigger("Dead");
             rabbitState = RabbitState.Die;
         }
-    }
-
-    /// <summary>
-    /// 피격시 몬스터 몸에서 번쩍번쩍 효과를 준다
-    /// </summary>
-    void effectDamageTween()
-    {
-        //트윈을 돌리다 또 트윈 함수가 진행되면 로직이 엉망이 될 수 있어서 
-        //트윈 중복 체크로 미리 차단을 해준다
-        if (effectTweener != null && effectTweener.isComplete == false)
-        {
-            return;
-        }
-
-        //번쩍이는 이펙트 색상을 지정해준다
-        Color colorTo = Color.red;
-
-        //트윈의 타겟은 스킨매쉬랜더러, 시간은 0.2초, 파라메터로는 색상 , 반복. 콜백함수
-        effectTweener = HOTween.To(skinnedMeshRenderer, 0.2f, new TweenParms()
-                                //색상을 교체
-                                .Prop("material.color", colorTo)
-                                // 반복은 1번만 요요를 안쓰면 빨강색 1회 흰색 1회 해야 한다. 
-                                .Loops(1, LoopType.Yoyo)
-                                //피격 이펙트 종료시 이벤트 함수 호출
-                                .OnStepComplete(OnDamageTweenFinished));
-        
-    }
-
-    /// <summary>
-    /// 피격이펙트 종료시 이벤트 함수 호출
-    /// </summary>
-    void OnDamageTweenFinished()
-    {
-        //트윈이 끝나면 하얀색으로 확실히 색상을 돌려준다
-        skinnedMeshRenderer.material.color = Color.white;
     }
 }

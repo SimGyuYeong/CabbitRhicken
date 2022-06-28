@@ -25,7 +25,8 @@ public class GameManager : MonoBehaviour
     public enum GameType
     {
         Ready,
-        Ing
+        Ing,
+        DIe
     }
     public GameType gameType = GameType.Ready;
 
@@ -34,15 +35,10 @@ public class GameManager : MonoBehaviour
         Instance = this;
     }
 
-    private void Start()
-    {
-        NextStage();
-    }
-
     /// <summary>
-    /// 플레이어가 죽었을 때 발동되는 함수
+    /// 플레이어가 죽고 다시 시작할때 실행될 함수
     /// </summary>
-    public void GameOver()
+    public void Retry()
     {
         gameType = GameType.Ready;
         _stageCount = 0;

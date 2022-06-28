@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
+using UnityEngine.UI;
 
 public class PlayerSkill : MonoBehaviour
 {
@@ -8,21 +10,36 @@ public class PlayerSkill : MonoBehaviour
     public bool powerUpIng = false; //각성 스킬을 사용중인가?
     public bool timeStopIng = false; //시간 정지 스킬을 사용중인가?
 
+    public GameObject powerupParticle;
+    public GameObject slowlyParticle;
+
+    public Transform timestopTrm;
+    public Image timestopImage;
+    public Transform slowlytimeTrm;
+
     private void Update()
     {
         if(GameManager.Instance.gameType == GameManager.GameType.Ing)
         {
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
-                if(GameManager.Instance.player.slowlyTimeCnt > 0)
+                if (GameManager.Instance.player.slowlyTimeCnt > 0)
                 {
                     if(slowlyTimeIng == false)
                     {
+                        slowlytimeTrm.localPosition = new Vector3(1100, 0);
+
                         UIManager.Instance.SkillExplainMessage("시간지연 스킬을 사용했습니다.");
                         GameManager.Instance.player.slowlyTimeCnt -= 1;
                         slowlyTimeIng = true;
                         StartCoroutine(DelaySlowly());
                         UIManager.Instance.SlowlyStatusUpdate();
+
+                        Sequence seq = DOTween.Sequence();
+                        seq.Append(slowlytimeTrm.DOLocalMoveX(100, 0.5f));
+                        seq.AppendCallback(() => Instantiate(slowlyParticle, transform));
+                        seq.Append(slowlytimeTrm.DOLocalMoveX(-100, 1f));
+                        seq.Append(slowlytimeTrm.DOLocalMoveX(-1100, 0.5f));
                     }
                     else
                     {
@@ -41,6 +58,7 @@ public class PlayerSkill : MonoBehaviour
                 {
                     if (powerUpIng == false)
                     {
+                        Instantiate(powerupParticle, transform);
                         UIManager.Instance.SkillExplainMessage("각성 스킬을 사용했습니다.");
                         GameManager.Instance.player.powerUpCnt -= 1;
                         powerUpIng = true;
@@ -69,6 +87,19 @@ public class PlayerSkill : MonoBehaviour
                         timeStopIng = true;
                         StartCoroutine(DelayTimeStop());
                         UIManager.Instance.TimeStopStatusUpdate();
+
+                        timestopTrm.DOScale(Vector3.one, 0);
+                        timestopImage.DOFade(1, 0);
+                        timestopImage.DOColor(Color.white, 0);
+
+                        Sequence seq = DOTween.Sequence();
+                        seq.Append(timestopTrm.DOScale(Vector3.one * 1.2f, 0.2f));
+                        seq.Append(timestopTrm.DOScale(Vector3.one * 0.9f, 0.2f));
+                        seq.Append(timestopTrm.DOScale(Vector3.one, 0.2f));
+                        seq.Append(timestopImage.DOColor(Color.red, .2f));
+                        seq.AppendInterval(0.2f);
+                        seq.Append(timestopTrm.DOScale(Vector3.one * 5f, 1.5f));
+                        seq.Join(timestopImage.DOFade(0, 1.5f));
                     }
                     else
                     {

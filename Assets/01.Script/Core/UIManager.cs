@@ -31,6 +31,11 @@ public class UIManager : MonoBehaviour
 
     private GameObject _gameStopUI; //게임 종료 UI
 
+    private Transform _gameoverUI;
+    private TextMeshProUGUI _gameoverTitle;
+    private Transform _retryButton;
+    private Transform _exitButton;
+
     [SerializeField] private GameObject _titleObj;
     private Image _titleEffectImage;
 
@@ -41,7 +46,7 @@ public class UIManager : MonoBehaviour
 
     public bool isShopOpen = false;
 
-    
+    Sequence skillSeq = null;
 
     private void Awake()
     {
@@ -62,6 +67,11 @@ public class UIManager : MonoBehaviour
         _skillExplainText = _canvas.Find("SkillInv/Explain").GetComponent<Image>();
 
         _gameStopUI = _canvas.Find("GameStop").gameObject;
+
+        _gameoverUI = _canvas.Find("GameOver");
+        _gameoverTitle = _gameoverUI.Find("TitleText").GetComponent<TextMeshProUGUI>();
+        _retryButton = _gameoverUI.Find("Retry");
+        _exitButton = _gameoverUI.Find("Exit");
     }
 
     private void Start()
@@ -80,21 +90,29 @@ public class UIManager : MonoBehaviour
         }
         else if(Input.GetKeyDown(KeyCode.Escape))
         {
-            if(_gameStopUI.activeSelf == false)
-            {
-                _gameStopUI.SetActive(true);
-                Time.timeScale = 0f;
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
-            }
-            else
-            {
-                _gameStopUI.SetActive(false);
-                Time.timeScale = 1f;
-                Cursor.visible = false;
-                Cursor.lockState = CursorLockMode.Locked;
-            }
-            
+            ShowOptionPanel();
+        }
+    }
+
+    public void CursorVisible(bool check)
+    {
+        Cursor.visible = check;
+        Cursor.lockState = check == true ? CursorLockMode.None : CursorLockMode.Locked;
+    }
+
+    public void ShowOptionPanel()
+    {
+        if (_gameStopUI.activeSelf == false)
+        {
+            _gameStopUI.SetActive(true);
+            Time.timeScale = 0f;
+            CursorVisible(true);
+        }
+        else
+        {
+            _gameStopUI.SetActive(false);
+            Time.timeScale = 1f;
+            CursorVisible(false);
         }
     }
 
@@ -116,6 +134,8 @@ public class UIManager : MonoBehaviour
         seq1.Append(_titleObj.transform.DOLocalMove(new Vector3(0, 0, 0), .5f, true));
         seq1.Append(seq.Play());
         seq1.Append(_titleObj.transform.DOLocalMove(new Vector3(0, 440, 0), .5f, true));
+        seq1.Append(_titleEffectImage.DOFade(1, 0));
+        seq1.Append(_titleEffectImage.transform.DOScale(new Vector3(350, 90, 1), 0));
     }
 
     /// <summary>
@@ -229,10 +249,51 @@ public class UIManager : MonoBehaviour
     public void SkillExplainMessage(string message)
     {
         _skillExplainText.transform.GetComponentInChildren<Text>().text = message;
-        Sequence seq = DOTween.Sequence();
-        seq.Append(_skillExplainText.transform.DOScale(Vector3.one, .2f));
-        seq.AppendInterval(0.5f);
-        seq.Append(_skillExplainText.transform.DOScale(Vector3.zero, .2f));
+
+        if(skillSeq.IsActive() == true)
+        {
+            skillSeq.Kill();
+        }
+
+        skillSeq = DOTween.Sequence();
+
+        skillSeq.Append(_skillExplainText.transform.DOScale(Vector3.one, .2f));
+        skillSeq.AppendInterval(1f);
+        skillSeq.Append(_skillExplainText.transform.DOScale(Vector3.zero, .2f));
+    }
+
+    /// <summary>
+    /// 게임 오버 화면
+    /// </summary>
+    public void ShowGameOver()
+    {
+        if(_gameoverUI.gameObject.activeSelf == true)
+        {
+            Time.timeScale = 1f;
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+
+            _retryButton.localScale = Vector3.zero;
+            _exitButton.localScale = Vector3.zero;
+            _gameoverTitle.transform.DOLocalMoveY(-160, 0);
+            _gameoverTitle.DOFade(0, 0);
+            _gameoverUI.gameObject.SetActive(false);
+        }
+        else
+        {
+            _gameoverUI.gameObject.SetActive(true);
+            Sequence seq = DOTween.Sequence();
+            seq.Append(_gameoverTitle.transform.DOLocalMoveY(140, .5f));
+            seq.Join(_gameoverTitle.DOFade(1, .5f));
+            seq.Append(_retryButton.DOScale(Vector3.one, .5f));
+            seq.Join(_exitButton.DOScale(Vector3.one, .5f));
+            seq.AppendCallback(() =>
+            {
+                Time.timeScale = 0f;
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+            });
+        }
     }
 
     /// <summary>

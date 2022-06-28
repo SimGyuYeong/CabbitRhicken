@@ -14,9 +14,10 @@ public class Player : MonoBehaviour
         {
             _playerTime = value;
             UIManager.Instance.UpdateStatusUI();
-            if (_playerTime <= 0)
+            if (_playerTime <= 0 && GameManager.Instance.gameType == GameManager.GameType.Ing)
             {
-                GameManager.Instance.GameOver();
+                GameManager.Instance.gameType = GameManager.GameType.DIe;
+                UIManager.Instance.ShowGameOver();
             }
         }
     }
