@@ -90,6 +90,23 @@ public class UIManager : MonoBehaviour
         }
         else if(Input.GetKeyDown(KeyCode.Escape))
         {
+            if (GameManager.Instance.gameType == GameManager.GameType.Ing)
+            {
+                if (playingShopUI.activeSelf == true)
+                {
+                    ShowShop(playingShopUI.transform);
+                    return;
+                }
+            }
+            else if (GameManager.Instance.gameType == GameManager.GameType.Ready)
+            {
+                if (_coinShopUI.gameObject.activeSelf == true)
+                {
+                    ShowShop(_coinShopUI.transform);
+                    return;
+                }
+            }
+
             ShowOptionPanel();
         }
     }
