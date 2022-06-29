@@ -41,12 +41,13 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private ShopButton _shopButton;
     [SerializeField] private GameObject playingShopUI;
-
     private Transform _coinShopUI;
 
     public bool isShopOpen = false;
 
     Sequence skillSeq = null;
+
+    public AudioSource audiio;
 
     private void Awake()
     {
@@ -72,6 +73,11 @@ public class UIManager : MonoBehaviour
         _gameoverTitle = _gameoverUI.Find("TitleText").GetComponent<TextMeshProUGUI>();
         _retryButton = _gameoverUI.Find("Retry");
         _exitButton = _gameoverUI.Find("Exit");
+
+        audiio = GetComponent<AudioSource>();
+
+        audiio.volume = PlayerPrefs.GetFloat("musicVolume", 1);
+        _gameStopUI.transform.Find("Slider").GetComponent<Slider>().value = audiio.volume;
     }
 
     private void Start()
@@ -398,5 +404,15 @@ public class UIManager : MonoBehaviour
 #else
                 Application.Quit();
 #endif
+    }
+
+    /// <summary>
+    /// 배경음악 볼륨 설정 (슬라이드 이벤트 함수)
+    /// </summary>
+    /// <param name="volume"></param>
+    public void SetMusicVolume(float volume)
+    {
+        audiio.volume = volume;
+        PlayerPrefs.SetFloat("musicVolume", volume);
     }
 }
